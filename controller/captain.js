@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 dotenv.config({});
 
 const getCaptain = TryCatch(async (req, res) => {
-    const captain = await Captain.findById(req.captain._id);
+    const captain = await Captain.findById(req.captain);
 
     if (!captain) {
         return res.status(400).json({
@@ -23,7 +23,7 @@ const getCaptain = TryCatch(async (req, res) => {
 });
 
 const logoutCaptain = TryCatch(async (_, res) => {
-    res.cookie("captianToken", "", { ...cookieOptions, maxAge: 0 });
+    res.cookie("captainToken", "", { ...cookieOptions, maxAge: 0 });
 
     return res.status(200).json({
         success: true,
@@ -53,8 +53,10 @@ const newCaptain = TryCatch(async (req, res) => {
     const hashPassword = await bcrypt.hash(password, 10);
 
     await Captain.create({
-        firstname,
-        lastname,
+        fullname: {
+            firstname,
+            lastname,
+        },
         email,
         password: hashPassword,
         vehicle: [{
@@ -98,15 +100,15 @@ const loginCaptain = TryCatch(async (req, res) => {
             message: "Invalid credentails",
         });
     }
-});
 
-const token = jwt.sign({ _id: captain._id }, process.env.JWT_CAPTAIN_STR);
+    const token = jwt.sign({ _id: captain._id }, process.env.JWT_CAPTAIN_STR);
 
-res.cookie("captainToken", token, cookieOptions);
+    res.cookie("captainToken", token, cookieOptions);
 
-return res.status(200).json({
-    success: true,
-    message: "Captain created successully",
+    return res.status(200).json({
+        success: true,
+        message: "Captain login successully",
+    });
 });
 
 export {

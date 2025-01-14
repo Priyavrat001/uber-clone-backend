@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 dotenv.config({});
 
 const getUser = TryCatch(async (req, res) => {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user);
 
     if (!user) {
         return res.status(404).json({
@@ -41,7 +41,7 @@ const newUser = TryCatch(async (req, res, next) => {
         })
     }
 
-    const user = await User.findOne(email)
+    const user = await User.findOne({email})
     if (user) {
         return res.status(400).json({
             success: false,
@@ -49,7 +49,7 @@ const newUser = TryCatch(async (req, res, next) => {
         });
     };
 
-    const hashPassword = await bcrypt.hash(10, process.env.JWT_STR)
+    const hashPassword = await bcrypt.hash(password, 10)
 
     await User.create({
         firstname,
@@ -74,7 +74,7 @@ const login = TryCatch(async (req, res, next) => {
         })
     }
 
-    const user = await User.findeOne(email).select("+password");
+    const user = await User.findOne({email}).select("+password");
 
     const comparePassword = await bcrypt.compare(password, user.password);
 
@@ -100,6 +100,7 @@ const login = TryCatch(async (req, res, next) => {
 
 });
 
+// for the future use if require;
 const editUser = TryCatch(async (req, res) => {
     const { firstname, lastname } = req.body;
 
@@ -110,7 +111,7 @@ const editUser = TryCatch(async (req, res) => {
         })
     };
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user);
 
     if (!user) {
         return res.status(200).json({
