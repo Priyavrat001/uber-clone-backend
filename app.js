@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { connectMongoDB } from "./utils/db.js";
 import userRoute from "./routes/user.js"
 import captainRoute from "./routes/captain.js"
+import errorMiddleware from "./middleware/error.js";
 
 dotenv.config({});
 
@@ -28,6 +29,8 @@ app.get("/", (_, res) => {
 
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/captain", captainRoute);
+
+app.use(errorMiddleware);
 
 app.listen(port, () => {
     console.log(`port is running on ${port}`);
