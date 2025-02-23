@@ -34,7 +34,7 @@ const logoutCaptain = TryCatch(async (_, res) => {
 const newCaptain = TryCatch(async (req, res) => {
     const { firstname, lastname, email, password, vehicle, color, plate, capacity, vehicleType } = req.body;
 
-    if (!firstname || !lastname || !email || !password || !vehicle || !color || !plate || !capacity || !vehicleType) {
+    if (!firstname || !lastname || !email || !password) {
         return res.status(400).json({
             success: false,
             message: "Please enter valid field",

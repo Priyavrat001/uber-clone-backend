@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 dotenv.config({});
 
 const getUser = TryCatch(async (req, res) => {
-    const user = await User.findById(req.user);
+    const user = await User.find({});
 
     if (!user) {
         return res.status(404).json({
