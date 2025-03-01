@@ -32,9 +32,10 @@ const logoutCaptain = TryCatch(async (_, res) => {
 });
 
 const newCaptain = TryCatch(async (req, res) => {
-    const { firstname, lastname, email, password, vehicle, color, plate, capacity, vehicleType } = req.body;
+    const { firstname, lastname, email, password, vehicle } = req.body;
 
-    if (!firstname || !lastname || !email || !password) {
+
+    if (!firstname || !lastname || !email || !password || !vehicle) {
         return res.status(400).json({
             success: false,
             message: "Please enter valid field",
@@ -59,12 +60,7 @@ const newCaptain = TryCatch(async (req, res) => {
         },
         email,
         password: hashPassword,
-        vehicle: [{
-            color,
-            plate,
-            capacity,
-            vehicleType
-        }]
+        vehicle
     });
 
     return res.status(200).json({

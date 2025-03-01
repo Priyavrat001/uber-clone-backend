@@ -9,7 +9,7 @@ const errorMiddleware = (err, req, res, next) => {
         message = `Duplicate value entered for ${field} field. Please use another value.`;
       }
   
-    res.status(statusCode).json({
+    return res.status(statusCode).json({
       success: false,
       message,
     });
