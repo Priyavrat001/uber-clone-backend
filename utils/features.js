@@ -5,43 +5,43 @@ import ErrorHandler from "./errorClass.js";
 dotenv.config({});
 
 const cookieOptions = {
-    maxAge: 15 * 24 * 60 * 60 * 1000,
-    sameSite: "strict",
-    httpOnly: true,
-    secure: process.env.NODE_ENV
+  maxAge: 15 * 24 * 60 * 60 * 1000,
+  sameSite: "strict",
+  httpOnly: true,
+  secure: process.env.NODE_ENV
 }
 
 const TryCatch = (func) => async (req, res, next) => {
-    try {
-        await func(req, res, next);
-    } catch (error) {
-        next(error)
-    }
+  try {
+    await func(req, res, next);
+  } catch (error) {
+    next(error)
+  }
 };
 
 // adding map features here
 
 const getAddressCoordinate = async (address) => {
-    const api_key = process.env.GEOCLOUD_API;
+  const api_key = process.env.GEOCLOUD_API;
 
-    if (!address) return new ErrorHandler(400, "Not able to find the address");
+  if (!address) return next(new ErrorHandler(400, "Not able to find the address"));
 
-    const url = `https://geocode.maps.co/search?q=${encodeURIComponent(address)}&api_key=${api_key}`;
+  const url = `https://geocode.maps.co/search?q=${encodeURIComponent(address)}&api_key=${api_key}`;
 
-    const response = await axios.get(url);
+  const response = await axios.get(url);
 
-    const data = response.data;
+  const data = response.data;
 
-    if (!data || data.length === 0) {
-        throw new Error("Address not found");
-    }
+  if (!data || data.length === 0) {
+    throw new Error("Address not found");
+  }
 
-    const location = data[0];
+  const location = data[0];
 
-    return {
-        lat: parseFloat(location.lat),
-        lng: parseFloat(location.lon),
-    };
+  return {
+    lat: parseFloat(location.lat),
+    lng: parseFloat(location.lon),
+  };
 };
 
 // calculating distance and time using open route service
@@ -74,9 +74,36 @@ const getDrivingDistanceTime = async (origin, destination) => {
   };
 };
 
+const getFare = async(pickup, drop) => {
+ const origin = await getAddressCoordinate(pickup);
+  const destination = await getAddressCoordinate(drop);
+
+  const { distance, duration } = await getDrivingDistanceTime(origin, destination);
+
+  const distanceInMeters = Number(distance);
+  if (isNaN(distanceInMeters)) throw new Error("Invalid distance received");
+
+  const distanceInKm = Math.ceil(distanceInMeters / 1000);
+
+  const rates = {
+    bike: 8,
+    auto: 10,
+    car: 12
+  };
+
+  const fares = {};
+  for (const [vehicle, rate] of Object.entries(rates)) {
+    fares[vehicle] = distanceInKm * rate;
+  }
+
+  return fares;
+};
+
+
 export {
-    TryCatch,
-    cookieOptions,
-    getAddressCoordinate,
-    getDrivingDistanceTime
+  TryCatch,
+  cookieOptions,
+  getAddressCoordinate,
+  getDrivingDistanceTime,
+  getFare
 }

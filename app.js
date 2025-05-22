@@ -7,6 +7,7 @@ import userRoute from "./routes/user.js"
 import captainRoute from "./routes/captain.js"
 import errorMiddleware from "./middleware/error.js";
 import mapRoute from "./routes/map.js";
+import rideRoute from "./routes/ride.js";
 
 dotenv.config({});
 
@@ -31,6 +32,7 @@ app.get("/", (_, res) => {
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/captain", captainRoute);
 app.use("/api/v1/map", mapRoute);
+app.use("/api/v1/ride", rideRoute);
 
 app.use(errorMiddleware);
 

@@ -127,6 +127,31 @@ This is the backend server for the Uber Clone project. It is built with Node.js,
     }
     ```
 
+### Ride Routes (`/api/v1/ride`)
+- `POST /new` — Create a new ride (user books a ride)
+  - **Request Body:**
+    ```json
+    {
+      "pickup": "Pickup Address",
+      "destination": "Destination Address",
+      "vechicleType": "car"
+    }
+    ```
+  - **Output:**
+    ```json
+    {
+      "success": true,
+      "message": "Ride created successfully",
+      "ride": {
+        "_id": "ride_id",
+        "user": "user_id",
+        "pickup": "Pickup Address",
+        "destination": "Destination Address",
+        "fare": "₹123"
+      }
+    }
+    ```
+
 ## Map APIs Used
 - **Geocode API**: [maps.co Geocoding API](https://geocode.maps.co/) — Converts address to coordinates.
   - Endpoint: `https://geocode.maps.co/search`
