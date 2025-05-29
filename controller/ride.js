@@ -1,6 +1,6 @@
 import { Ride } from "../models/ride.js";
 import ErrorHandler from "../utils/errorClass.js";
-import { getFare, TryCatch } from "../utils/features.js";
+import { getFare, TryCatch, getOtp } from "../utils/features.js";
 
 const newRide = TryCatch(async (req, res, next) => {
     const { pickup, destination, vechicleType } = req.body;
@@ -21,6 +21,7 @@ const newRide = TryCatch(async (req, res, next) => {
         user: req.user,
         pickup,
         destination,
+        otp:getOtp(4),
         fare
     });
 

@@ -48,6 +48,12 @@ const schema = new mongoose.Schema({
     signature:{
         type:String
     },
+
+    otp:{
+        type:String,
+        select:false,
+        required:true
+    }
 });
 
 export const Ride = mongoose.model("Ride", schema);

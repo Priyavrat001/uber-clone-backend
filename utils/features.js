@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import axios from "axios";
 import ErrorHandler from "./errorClass.js";
+import crypto from "crypto";
 
 dotenv.config({});
 
@@ -99,11 +100,19 @@ const getFare = async(pickup, drop) => {
   return fares;
 };
 
+// genreating hash password
+const getOtp = (num) => {
+  const otp = crypto.randomInt
+    ? crypto.randomInt(Math.pow(10, num - 1), Math.pow(10, num)).toString()
+    : Math.floor(Math.random() * (Math.pow(10, num) - Math.pow(10, num - 1))) + Math.pow(10, num - 1) + '';
+  return otp;
+}
 
 export {
   TryCatch,
   cookieOptions,
   getAddressCoordinate,
   getDrivingDistanceTime,
-  getFare
+  getFare,
+  getOtp
 }
