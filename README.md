@@ -151,6 +151,22 @@ This is the backend server for the Uber Clone project. It is built with Node.js,
       }
     }
     ```
+- `GET /get-fare-price?pickup=ADDRESS&destination=ADDRESS` — Get fare prices for all vehicle types between two locations (requires authentication)
+  - **Query Parameters:**
+    - `pickup`: The pickup address
+    - `destination`: The destination address
+  - **Output:**
+    ```json
+    {
+      "success": true,
+      "fares": {
+        "bike": 80,
+        "auto": 100,
+        "car": 120
+      }
+    }
+    ```
+  - Returns the calculated fare for each vehicle type based on the distance between the provided locations.
 
 ## Map APIs Used
 - **Geocode API**: [maps.co Geocoding API](https://geocode.maps.co/) — Converts address to coordinates.

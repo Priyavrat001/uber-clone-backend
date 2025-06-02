@@ -32,7 +32,29 @@ const newRide = TryCatch(async (req, res, next) => {
     });
 });
 
+
+const getFarePrice = TryCatch(async(req, res, next) => {
+    const {pickUp, destination} = req.query;
+
+    if(!pickUp || !destination) {
+        return next(new ErrorHandler("Please provide both pickup and destination", 400));
+    };
+
+
+    const fareObj = await getFare(pickUp, destination);
+
+    if(!fareObj) {
+        return next(new ErrorHandler("Unable to calculate fare", 500));
+    };
+
+    return res.status(200).json({
+        success: true,
+        fare: fareObj
+    });
+})
+
 export {
-    newRide
+    newRide,
+    getFarePrice
 };
 
