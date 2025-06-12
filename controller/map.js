@@ -7,6 +7,9 @@ dotenv.config({});
 const getCoordinates = async (req, res) => {
 
     const { address } = req.query;
+
+    if(!address) return next(new ErrorHandler("Please provide the address", 400));
+    
     const coordinates = await getAddressCoordinate(address);
 
     return res.status(200).json({
@@ -19,7 +22,7 @@ const getDistanceTime = TryCatch(async (req, res, next) => {
     const { origin, destination } = req.query;
 
     if (!origin || !destination) {
-        return next(new ErrorHandler(400, "Origin and destination are required"));
+        return next(new ErrorHandler("Please provide both origin and destination", 400));
     }
 
     const originCoordinates = await getAddressCoordinate(origin);

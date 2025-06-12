@@ -3,13 +3,13 @@ import ErrorHandler from "../utils/errorClass.js";
 import { getFare, TryCatch, getOtp } from "../utils/features.js";
 
 const newRide = TryCatch(async (req, res, next) => {
-    const { pickup, destination, vechicleType } = req.body;
+    const { pickUp, destination, vechicleType } = req.body;
 
-    if (!pickup || !destination || !vechicleType) {
+    if (!pickUp || !destination || !vechicleType) {
         return next(new ErrorHandler("Please provide all the fields", 400));
     }
 
-    const fareObj = await getFare(pickup, destination);
+    const fareObj = await getFare(pickUp, destination);
 
     let fare = fareObj[vechicleType.toLowerCase()];
 
@@ -19,7 +19,7 @@ const newRide = TryCatch(async (req, res, next) => {
 
     const ride = await Ride.create({
         user: req.user,
-        pickup,
+        pickUp,
         destination,
         otp:getOtp(4),
         fare

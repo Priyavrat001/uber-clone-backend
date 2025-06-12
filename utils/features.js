@@ -1,7 +1,6 @@
-import dotenv from "dotenv";
 import axios from "axios";
-import ErrorHandler from "./errorClass.js";
 import crypto from "crypto";
+import dotenv from "dotenv";
 
 dotenv.config({});
 
@@ -25,7 +24,7 @@ const TryCatch = (func) => async (req, res, next) => {
 const getAddressCoordinate = async (address) => {
   const api_key = process.env.GEOCLOUD_API;
 
-  if (!address) return next(new ErrorHandler(400, "Not able to find the address"));
+  if (!address) throw new Error("Not able to find the ride");
 
   const url = `https://geocode.maps.co/search?q=${encodeURIComponent(address)}&api_key=${api_key}`;
 
@@ -109,10 +108,9 @@ const getOtp = (num) => {
 }
 
 export {
-  TryCatch,
   cookieOptions,
   getAddressCoordinate,
   getDrivingDistanceTime,
   getFare,
-  getOtp
-}
+  getOtp, TryCatch
+};

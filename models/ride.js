@@ -11,7 +11,7 @@ const schema = new mongoose.Schema({
         ref:"Captain",
     },
 
-    pickup:{
+    pickUp:{
         type:String,
         required:[true, "Pickup location is required"]
     },
