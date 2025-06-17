@@ -1,6 +1,7 @@
 import axios from "axios";
 import crypto from "crypto";
 import dotenv from "dotenv";
+import {Captain} from "../models/captain.js";
 
 dotenv.config({});
 
@@ -10,6 +11,11 @@ const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV
 }
+
+const corsOptions = {
+        origin: process.env.CORS_ORIGIN,
+        credentials:true
+    }
 
 const TryCatch = (func) => async (req, res, next) => {
   try {
@@ -107,10 +113,38 @@ const getOtp = (num) => {
   return otp;
 }
 
+//geting captain radius location;
+const getCaptainInTheRadius = async (ltd, lng, radius) => {
+
+  const captain = await Captain.find({
+    location: {
+      $geoWithin: {
+        $centerSphere: [[ltd, lng], radius / 6378.1] // radius in kilometers
+      }
+    }
+  });
+
+  if(!captain) throw new Error("Not able to find the captain location");
+
+  return captain;
+};
+
+const getCaptainLocation = async (pickUp)=>{
+
+  const pickUpCoordinates = await getAddressCoordinate(pickUp);
+
+  const getLocation = getCaptainInTheRadius(pickUpCoordinates.lat, pickUpCoordinates.lng, 200);
+
+  return getLocation;
+}
+
 export {
   cookieOptions,
   getAddressCoordinate,
   getDrivingDistanceTime,
   getFare,
-  getOtp, TryCatch
+  getOtp, TryCatch,
+  corsOptions,
+  getCaptainInTheRadius,
+  getCaptainLocation
 };

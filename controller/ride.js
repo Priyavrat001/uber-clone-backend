@@ -1,6 +1,7 @@
 import { Ride } from "../models/ride.js";
 import ErrorHandler from "../utils/errorClass.js";
-import { getFare, TryCatch, getOtp } from "../utils/features.js";
+import { getFare, TryCatch, getOtp, getCaptainLocation } from "../utils/features.js";
+import {sendMessageToSocketId} from "../utils/socketHelper.js"
 
 const newRide = TryCatch(async (req, res, next) => {
     const { pickUp, destination, vechicleType } = req.body;
@@ -25,11 +26,30 @@ const newRide = TryCatch(async (req, res, next) => {
         fare
     });
 
-    return res.status(201).json({
+
+    const user = await Ride.findOne({_id:ride._id}).populate("user");
+
+    res.status(201).json({
         success: true,
         message: "Ride created successfully",
         ride
     });
+
+    getCaptainLocation(pickUp).then((captainData)=>{
+
+        let id = "";
+
+        for(let item of captainData){
+            id = item.socketId
+        }
+
+        ride.otp = "";
+
+        sendMessageToSocketId(id, {
+            event:"new-ride",
+            data:user
+        })
+    }) 
 });
 
 
@@ -51,6 +71,7 @@ const getFarePrice = TryCatch(async(req, res, next) => {
         success: true,
         fare: fareObj
     });
+
 })
 
 export {
