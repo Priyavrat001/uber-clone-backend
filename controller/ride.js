@@ -1,3 +1,4 @@
+import { Captain } from "../models/captain.js";
 import { Ride } from "../models/ride.js";
 import ErrorHandler from "../utils/errorClass.js";
 import { getFare, TryCatch, getOtp, getCaptainLocation } from "../utils/features.js";
@@ -72,10 +73,56 @@ const getFarePrice = TryCatch(async(req, res, next) => {
         fare: fareObj
     });
 
-})
+});
+
+
+const confirmRide = TryCatch(async(req, res, next) => {
+    const {rideId} = req.body;
+
+    if(!rideId) {
+        return next(new ErrorHandler("Please provide ride ID", 400));
+    };
+
+    const ride = await Ride.findById(rideId).populate("user");
+
+    let captain = "";
+
+    if(ride.captain){
+       captain = await Captain.findById(ride.captain);
+    }else{
+        captain = await Captain.findById(req.captain);
+    };
+
+    console.log(captain)
+    if(!ride) {
+        return next(new ErrorHandler("Ride not found", 404));
+    };
+
+    if(ride.status === "completed") {
+        return next(new ErrorHandler("Ride already completed", 400));
+    };
+
+    ride.status = "accepted";
+    ride.captain = req.captain;
+
+    await ride.save();
+
+    sendMessageToSocketId(ride.user.socketId, {
+        event:"ride-confirmed",
+        data:ride
+    })
+
+    return res.status(200).json({
+        success: true,
+        message: "Ride confirmed successfully",
+        ride,
+        captain
+    });
+});
 
 export {
     newRide,
-    getFarePrice
+    getFarePrice,
+    confirmRide
 };
 
