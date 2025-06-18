@@ -1,25 +1,24 @@
 # Uber Clone Server
 
-This is the backend server for the Uber Clone project. It is built with Node.js, Express, and MongoDB, and provides RESTful APIs for user, captain (driver), and map-related features.
-
-## Table of Contents
-- [Features](#features)
-- [API Routes](#api-routes)
-- [Map APIs Used](#map-apis-used)
-- [Environment Variables](#environment-variables)
-- [Installation](#installation)
-- [Scripts](#scripts)
-- [Dependencies](#dependencies)
-
----
+This is the backend server for the Uber Clone project. It is built with Node.js, Express, MongoDB, and Socket.IO, and provides RESTful APIs and real-time features for users, captains (drivers), and map-related services.
 
 ## Features
 - User authentication (register, login, logout, get profile)
 - Captain (driver) authentication (register, login, logout, get profile)
-- Get coordinates for a given address
-- Calculate driving distance and duration between two locations
+- Ride creation, fare calculation, and confirmation
+- Real-time ride requests and captain location updates via Socket.IO
+- Get coordinates, driving distance, and duration for addresses
+- Location suggestions using geocoding APIs
 - Secure cookies and JWT-based authentication
-- Error handling middleware
+- Modular controllers, routes, and middleware
+- Robust error handling
+
+## Real-Time Features (Socket.IO)
+- Socket.IO server is initialized and used for all real-time communication.
+- When a user creates a ride, a real-time event is sent to available captains.
+- Captains join rooms and send live location updates to the server.
+- Utility (`utils/socketHelper.js`) for sending messages to specific socket IDs.
+- All socket events are documented in the codebase for easy extension.
 
 ## API Routes
 
@@ -29,8 +28,7 @@ This is the backend server for the Uber Clone project. It is built with Node.js,
     ```json
     {
       "success": true,
-      "user": { /* user object */ },
-      "token": "jwt_token"
+      "message": "User created successFully"
     }
     ```
 - `POST /login` — Login user
@@ -38,8 +36,7 @@ This is the backend server for the Uber Clone project. It is built with Node.js,
     ```json
     {
       "success": true,
-      "user": { /* user object */ },
-      "token": "jwt_token"
+      "message": "Login successfully"
     }
     ```
 - `GET /me` — Get current user profile (requires authentication)
@@ -65,8 +62,7 @@ This is the backend server for the Uber Clone project. It is built with Node.js,
     ```json
     {
       "success": true,
-      "captain": { /* captain object */ },
-      "token": "jwt_token"
+      "message": "Captain created successfully"
     }
     ```
 - `POST /login` — Login captain
@@ -74,8 +70,7 @@ This is the backend server for the Uber Clone project. It is built with Node.js,
     ```json
     {
       "success": true,
-      "captain": { /* captain object */ },
-      "token": "jwt_token"
+      "message": "Captain login successully"
     }
     ```
 - `GET /me` — Get current captain profile (requires authentication)
@@ -101,121 +96,95 @@ This is the backend server for the Uber Clone project. It is built with Node.js,
     ```json
     {
       "success": true,
-      "coordinates": {
-        "lat": 12.9716,
-        "lng": 77.5946
-      }
+      "coordinates": { /* lat, lng */ }
     }
     ```
-- `GET /get-distance?origin=ADDRESS&destination=ADDRESS` — Get driving distance (km) and duration (min) between two addresses (requires authentication)
+- `GET /get-distance?origin=ADDRESS&destination=ADDRESS` — Get driving distance and duration (requires authentication)
   - **Output:**
     ```json
     {
       "success": true,
-      "origin": "origin address",
-      "destination": "destination address",
-      "distanceInKm": "12.34",
-      "durationInMin": "25.67"
+      "origin": "...",
+      "destination": "...",
+      "distanceInKm": "...",
+      "durationInMin": "..."
     }
     ```
-- `GET /get-suggested-locations` — (Reserved for future use)
+- `GET /get-suggested-locations?address=ADDRESS` — Get location suggestions (requires authentication)
   - **Output:**
     ```json
     {
       "success": true,
-      "locations": [ /* suggested locations */ ]
+      "data": { /* suggestions from geocoding API */ }
     }
     ```
 
 ### Ride Routes (`/api/v1/ride`)
-- `POST /new` — Create a new ride (user books a ride)
-  - **Request Body:**
-    ```json
-    {
-      "pickup": "Pickup Address",
-      "destination": "Destination Address",
-      "vechicleType": "car"
-    }
-    ```
+- `POST /new-ride` — Create a new ride (user books a ride, triggers real-time event)
   - **Output:**
     ```json
     {
       "success": true,
       "message": "Ride created successfully",
-      "ride": {
-        "_id": "ride_id",
-        "user": "user_id",
-        "pickup": "Pickup Address",
-        "destination": "Destination Address",
-        "fare": "₹123"
-      }
+      "ride": { /* ride object */ }
     }
     ```
-- `GET /get-fare-price?pickup=ADDRESS&destination=ADDRESS` — Get fare prices for all vehicle types between two locations (requires authentication)
-  - **Query Parameters:**
-    - `pickup`: The pickup address
-    - `destination`: The destination address
+- `GET /get-fare-price?pickUp=ADDRESS&destination=ADDRESS` — Get fare prices for all vehicle types
   - **Output:**
     ```json
     {
       "success": true,
-      "fares": {
-        "bike": 80,
-        "auto": 100,
-        "car": 120
-      }
+      "fare": { /* fare object by vehicle type */ }
     }
     ```
-  - Returns the calculated fare for each vehicle type based on the distance between the provided locations.
+- `POST /confirm-ride` — Captain confirms a ride (requires authentication)
+  - **Output:**
+    ```json
+    {
+      "success": true,
+      "message": "Ride confirmed successfully",
+      "ride": { /* ride object */ },
+      "captain": { /* captain object */ }
+    }
+    ```
 
-## Map APIs Used
-- **Geocode API**: [maps.co Geocoding API](https://geocode.maps.co/) — Converts address to coordinates.
-  - Endpoint: `https://geocode.maps.co/search`
-  - Features used: Address lookup, returns latitude and longitude.
-- **OpenRouteService API**: [openrouteservice.org](https://openrouteservice.org/) — Calculates driving distance and time.
-  - Endpoint: `https://api.openrouteservice.org/v2/directions/driving-car`
-  - Features used: Route calculation, returns distance (meters) and duration (seconds).
+## Project Structure
+
+```
+server/
+  app.js                  # Main server file, initializes Express and Socket.IO
+  controller/             # Route controllers (user, captain, ride, map)
+  middleware/             # Auth and error middleware
+  models/                 # Mongoose models (User, Captain, Ride)
+  routes/                 # Express routers for all API endpoints
+  utils/                  # Utility functions (DB, features, socketHelper)
+  package.json            # Project metadata and dependencies
+  README.md               # Project documentation
+```
 
 ## Environment Variables
-Create a `.env` file in the `server/` directory with the following variables:
-```
-PORT=4000
-CORS_ORIGIN=http://localhost:5173
-MONGODB_URI=your_mongodb_connection_string
-GEOCLOUD_API=your_mapsco_api_key
-ORS_API_KEY=your_openrouteservice_api_key
-NODE_ENV=development
-```
+- `PORT` — Server port (default: 4000)
+- `MONGODB_URI` — MongoDB connection string
+- `JWT_SECRET` — Secret for JWT tokens
+- `ORS_API_KEY` — API key for OpenRouteService geocoding
 
 ## Installation
-1. Navigate to the `server/` directory:
-   ```powershell
-   cd f:\uberclone\server
-   ```
-2. Install dependencies:
-   ```powershell
+1. Install dependencies:
+   ```bash
    npm install
    ```
-3. Start the server:
-   ```powershell
+2. Start the development server:
+   ```bash
    npm run dev
    ```
 
 ## Scripts
-- `npm run dev` — Start server with nodemon (development)
-- `npm start` — Start server with Node.js
+- `npm run dev` — Start the server with nodemon for development
+- `npm start` — Start the server in production mode
 
 ## Dependencies
-- express
-- mongoose
-- dotenv
-- axios
-- bcryptjs
-- jsonwebtoken
-- cookie-parser
-- cors
-- nodemon
+- express, mongoose, dotenv, cors, cookie-parser, bcryptjs, jsonwebtoken, axios, nodemon, socket.io
 
 ---
 
-For more details, see the source code in the `controller/`, `routes/`, and `utils/` folders.
+For more details, see the codebase and inline comments in each file.
