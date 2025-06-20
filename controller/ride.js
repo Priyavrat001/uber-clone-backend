@@ -93,7 +93,6 @@ const confirmRide = TryCatch(async(req, res, next) => {
         captain = await Captain.findById(req.captain);
     };
 
-    console.log(captain)
     if(!ride) {
         return next(new ErrorHandler("Ride not found", 404));
     };
@@ -109,7 +108,10 @@ const confirmRide = TryCatch(async(req, res, next) => {
 
     sendMessageToSocketId(ride.user.socketId, {
         event:"ride-confirmed",
-        data:ride
+        data:{
+            ride,
+            captain
+        }
     })
 
     return res.status(200).json({
@@ -120,9 +122,52 @@ const confirmRide = TryCatch(async(req, res, next) => {
     });
 });
 
+const startRide = TryCatch(async(req, res, next) => {
+    const {rideId, captain, otp} = req.body;
+
+    if(!rideId || !captain || !otp) {
+        return next(new ErrorHandler("Please provide all the fields", 400));
+    };
+
+    const ride = await Ride.findById(rideId).select("+otp").populate("user");
+
+    if(!ride) {
+        return next(new ErrorHandler("Ride not found", 404));
+    };
+
+    if(ride.status === "completed") {
+        return next(new ErrorHandler("Ride already completed", 400));
+    };
+
+    if(ride.captain.toString() !== req.captain.toString()) {
+        return next(new ErrorHandler("You are not authorized to start this ride", 403));
+    };
+
+    if(ride.otp !== otp) {
+        return next(new ErrorHandler("Invalid OTP", 400));
+    };
+
+    ride.status = "ongoing";
+    ride.startTime = new Date();
+
+    await ride.save();
+
+    sendMessageToSocketId(ride.user.socketId, {
+        event:"ride-started",
+        data:ride
+    });
+
+    return res.status(200).json({
+        success: true,
+        message: "Ride started successfully",
+        ride
+    });
+});
+
 export {
     newRide,
     getFarePrice,
-    confirmRide
+    confirmRide,
+    startRide
 };
 
