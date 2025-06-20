@@ -121,6 +121,14 @@ This is the backend server for the Uber Clone project. It is built with Node.js,
 
 ### Ride Routes (`/api/v1/ride`)
 - `POST /new-ride` — Create a new ride (user books a ride, triggers real-time event)
+  - **Request Body:**
+    ```json
+    {
+      "pickUp": "Pickup Address",
+      "destination": "Destination Address",
+      "vechicleType": "car"
+    }
+    ```
   - **Output:**
     ```json
     {
@@ -138,6 +146,12 @@ This is the backend server for the Uber Clone project. It is built with Node.js,
     }
     ```
 - `POST /confirm-ride` — Captain confirms a ride (requires authentication)
+  - **Request Body:**
+    ```json
+    {
+      "rideId": "ride_id"
+    }
+    ```
   - **Output:**
     ```json
     {
@@ -145,6 +159,23 @@ This is the backend server for the Uber Clone project. It is built with Node.js,
       "message": "Ride confirmed successfully",
       "ride": { /* ride object */ },
       "captain": { /* captain object */ }
+    }
+    ```
+- `POST /start-ride` — Captain starts a ride (requires authentication)
+  - **Request Body:**
+    ```json
+    {
+      "rideId": "ride_id",
+      "captain": "captain_id",
+      "otp": "1234"
+    }
+    ```
+  - **Output:**
+    ```json
+    {
+      "success": true,
+      "message": "Ride started successfully",
+      "ride": { /* ride object */ }
     }
     ```
 
